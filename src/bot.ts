@@ -22,7 +22,6 @@ function showMainMenu(ctx: Context) {
 bot.start(async (ctx) => {
     try {
         const session = await getSession(ctx.from.id.toString());
-        console.log(session)
         if (!session) {
             await saveCity(ctx.from.id.toString(), { city: 'choosing' });
             ctx.reply('Пожалуйста, введите название города или отправьте ваше местоположение.', Markup.keyboard([
@@ -83,7 +82,7 @@ bot.hears(['Цельсий', 'Фаренгейт'], async (ctx) => {
 bot.hears('Показать погоду на сегодня', async (ctx) => {
     try {
         const session = await getSession(ctx.from.id.toString());
-        if (!session || !session.city || !session.units) {
+        if (!session || !session.lat || !session.lon || session.city === 'chosing' || !session.units) {
             ctx.reply('Сначала установите город и единицы измерения.');
             return;
         }
@@ -99,7 +98,6 @@ bot.hears('Показать погоду на сегодня', async (ctx) => {
             weatherMessage = getWeatherMessage(weather)
 
         } else {
-            console.log(cache)
             cache.temp = convertTempUnits(session.units, cache.temp)
             weatherMessage = getWeatherMessage(cache)
         }
@@ -137,12 +135,10 @@ bot.hears('Показать погоду на неделю', async (ctx) => {
                 condition: element.condition
             };
         });
-        // Функция для форматирования прогноза
         const formatForecast = (forecast: any) => {
             return `Дата: ${forecast.date}\nТемпература днём: ${forecast.dayTemp}\nТемпература ночью: ${forecast.nightTemp}\nСостояние: ${forecast.condition}`;
         };
 
-        // Форматируем каждый элемент прогноза и объединяем их в строку
         const forecastText = res.map(formatForecast).join('\n\n');
 
         ctx.reply(`Прогноз погоды в ${session.city} на неделю:\n\n${forecastText}`);
@@ -152,18 +148,6 @@ bot.hears('Показать погоду на неделю', async (ctx) => {
         ctx.reply('Произошла ошибка при получении прогноза. Пожалуйста, попробуйте позже.');
     }
 });
-
-// bot.hears('Сменить город', (ctx) => {
-//     try {
-//         ctx.reply('Пожалуйста, введите новый город.', Markup.keyboard([
-//             [{ text: 'Отправить местоположение', request_location: true }],
-//             ['Ввести город']
-//         ]).resize());
-//     } catch (error) {
-//         console.error('Ошибка при смене города:', error);
-//         ctx.reply('Произошла ошибка. Пожалуйста, попробуйте еще раз.');
-//     }
-// });
 
 bot.hears('Сменить единицу измерения', (ctx) => {
     try {
@@ -198,8 +182,7 @@ bot.on('text', async (ctx) => {
     }
 });
 
-
-
+console.log('Запуск бота')
 bot.launch().catch((error) => {
     console.error('Ошибка при запуске бота:', error);
-});
+})

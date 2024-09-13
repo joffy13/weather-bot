@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+const url = 'https://nominatim.openstreetmap.org/search';
 
 export const getCoordinates = async (city: string) => {
     try {
-        const response = await axios.get(NOMINATIM_URL, {
+        const response = await axios.get(url, {
             params: {
                 q: city,
                 format: 'json',

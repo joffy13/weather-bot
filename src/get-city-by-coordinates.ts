@@ -8,9 +8,9 @@ export async function getCityByCoordinates(latitude: number, longitude: number):
         const address = response.data.address;
 
         if (address && address.city) {
-            return address.city; // Возвращаем название города
+            return address.city;
         } else if (address && address.town) {
-            return address.town; // Если город не найден, но есть населенный пункт
+            return address.town;
         } else {
             throw new Error('Город не найден');
         }

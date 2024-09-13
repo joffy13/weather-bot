@@ -3,18 +3,18 @@ import { getCoordinates } from './geocode';
 
 const YANDEX_WEATHER_URL = 'https://yandex.ru/pogoda/';
 
-const MAX_RETRIES = 3; // Максимальное количество попыток
+const MAX_RETRIES = 3;
 
-const fetchPageData = async (page: Page, url: string, selector: string, retries = MAX_RETRIES) => {
+const fetchPageData = async (page: any, url: string, selector: string, retries = MAX_RETRIES) => {
     try {
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
         await page.waitForSelector(selector, { timeout: 15000 });
     } catch (error) {
         if (retries > 0) {
             console.warn(`Попытка повторного запроса: ${url}. Осталось попыток: ${retries}`);
-            return fetchPageData(page, url, selector, retries - 1); // Повторный запрос
+            return fetchPageData(page, url, selector, retries - 1);
         }
-        throw error; // Если исчерпаны все попытки, выбрасываем ошибку
+        throw error;
     }
 };
 
@@ -24,11 +24,10 @@ export const getWeather = async (city: string, units: string) => {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
 
-        console.log(`${YANDEX_WEATHER_URL}?lat=${lat}&lon=${lon}`);
 
         await fetchPageData(page, `${YANDEX_WEATHER_URL}?lat=${lat}&lon=${lon}`, '.temp__value');
 
-        const weatherData = await page.evaluate((city) => {
+        const weatherData = await page.evaluate((city: string) => {
             const temp = document.querySelector('.temp__value')?.textContent;
             const humidity = document.querySelector('.fact__humidity .term__value')?.textContent;
             const pressure = document.querySelector('.fact__pressure .term__value')?.textContent;
@@ -57,7 +56,6 @@ export const getWeeklyForecast = async (city: string, units: string) => {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
 
-        console.log(`${YANDEX_WEATHER_URL}?lat=${lat}&lon=${lon}/forecast`);
         await fetchPageData(page, `${YANDEX_WEATHER_URL}?lat=${lat}&lon=${lon}/forecast`, '.forecast-briefly__day-link');
 
         const forecastData = await page.evaluate(() => {
@@ -72,7 +70,6 @@ export const getWeeklyForecast = async (city: string, units: string) => {
             });
         });
 
-        // Оставляем только прогноз на ближайшие 7 дней
         const weeklyForecast = forecastData.slice(0, 7);
 
 
